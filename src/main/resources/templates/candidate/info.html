@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Primeira Página HTML Com Thymeleaf</title>
+</head>
+<body>
+<p th:text="${mensagemDaController}"/>
+
+<form th:object="${candidato}">
+    <p>Nome:</p><p th:text="${candidato.nome}"></p>
+    <p>Email:</p><p th:text="${candidato.email}"></p>
+    <p>Usuário:</p><p th:text="${candidato.usuario}"></p>
+</form>
+</body>
+</html>

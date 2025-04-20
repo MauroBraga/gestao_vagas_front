@@ -8,5 +8,15 @@
 </head>
 <body>
     <p th:text="${mensagemDaController}"/>
+
+    <form th:action="@{/create}" method="post" th:object="${candidato}">
+        Nome: <input type="text" name="nome"/>
+        <br/>
+        Email: <input type="email" name="email"/>
+        <br/>
+        Usuario: <input type="text" name="usuario"/>
+        <br/>
+        <button>Cadastrar Candidato</button>
+    </form>
 </body>
 </html>
