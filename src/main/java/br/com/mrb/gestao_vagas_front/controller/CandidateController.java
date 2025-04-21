@@ -1,7 +1,12 @@
 package br.com.mrb.gestao_vagas_front.controller;
 
 import br.com.mrb.gestao_vagas_front.service.CandidateService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,11 +31,18 @@ public class CandidateController {
     }
 
     @PostMapping("/signIn")
-    public String   signInCandidate(RedirectAttributes redirectAttributes,String username, String password) {
+    public String   signInCandidate(RedirectAttributes redirectAttributes, HttpSession session,String username, String password) {
       try{
           var token = this.candidateService.login(username, password);
+          var grants = token.getRoles().stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role.toString().toUpperCase())).toList();
+          var authentication = new UsernamePasswordAuthenticationToken(username, password, grants);
+          authentication.setDetails(token);
+          SecurityContextHolder.getContext().setAuthentication(authentication);
+          SecurityContext securityContext = SecurityContextHolder.getContext();
+          session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
+          session.setAttribute("token", token);
 
-          return "candidate/profile";
+          return "redirect:/candidate/profile";
 
 
       } catch (HttpClientErrorException e) {
@@ -40,6 +52,7 @@ public class CandidateController {
     }
 
     @GetMapping("/profile")
+    @PreAuthorize("hasRole('CANDIDATE')")
     public String profile(){
         return "candidate/profile";
     }
