@@ -1,13 +1,17 @@
 package br.com.mrb.gestao_vagas_front.controller;
 
+import br.com.mrb.gestao_vagas_front.dto.Token;
 import br.com.mrb.gestao_vagas_front.service.CandidateService;
+import br.com.mrb.gestao_vagas_front.service.ProfileCandidateService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,8 +25,11 @@ public class CandidateController {
     final
     CandidateService candidateService;
 
-    public CandidateController(CandidateService candidateService) {
+    final ProfileCandidateService profileCandidateService;
+
+    public CandidateController(CandidateService candidateService, ProfileCandidateService profileCandidateService) {
         this.candidateService = candidateService;
+        this.profileCandidateService = profileCandidateService;
     }
 
     @GetMapping("/login")
@@ -36,7 +43,7 @@ public class CandidateController {
           var token = this.candidateService.login(username, password);
           var grants = token.getRoles().stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role.toString().toUpperCase())).toList();
           var authentication = new UsernamePasswordAuthenticationToken(username, password, grants);
-          authentication.setDetails(token);
+          authentication.setDetails(token.getAccessToken());
           SecurityContextHolder.getContext().setAuthentication(authentication);
           SecurityContext securityContext = SecurityContextHolder.getContext();
           session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
@@ -53,7 +60,11 @@ public class CandidateController {
 
     @GetMapping("/profile")
     @PreAuthorize("hasRole('CANDIDATE')")
-    public String profile(){
+    public String profile(Model model){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        var token = (String) authentication.getDetails();
+        var result = profileCandidateService.execute(token);
+        model.addAttribute("profile", result);
         return "candidate/profile";
     }
 
