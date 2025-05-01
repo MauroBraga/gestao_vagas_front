@@ -2,6 +2,7 @@ package br.com.mrb.gestao_vagas_front.controller;
 
 import br.com.mrb.gestao_vagas_front.dto.Token;
 import br.com.mrb.gestao_vagas_front.service.CandidateService;
+import br.com.mrb.gestao_vagas_front.service.FindJobService;
 import br.com.mrb.gestao_vagas_front.service.ProfileCandidateService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,14 +28,33 @@ public class CandidateController {
 
     final ProfileCandidateService profileCandidateService;
 
-    public CandidateController(CandidateService candidateService, ProfileCandidateService profileCandidateService) {
+    final FindJobService   findJobService;
+
+    public CandidateController(CandidateService candidateService, ProfileCandidateService profileCandidateService, FindJobService findJobService) {
         this.candidateService = candidateService;
         this.profileCandidateService = profileCandidateService;
+        this.findJobService = findJobService;
     }
 
     @GetMapping("/login")
     public String loginCandidate() {
         return "candidate/login";
+    }
+
+    @GetMapping("/jobs")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    public String  jobs(Model model,String filter){
+        try {
+            if(filter != null && !filter.isEmpty()){
+                var token = getToken();
+                //model.addAttribute("filter", filter);
+                var jobs = findJobService.execute(token,filter);
+                model.addAttribute("jobs", jobs);
+            }
+        }catch (HttpClientErrorException e){
+            return "redirect:/candidate/login";
+        }
+        return "candidate/jobs";
     }
 
     @PostMapping("/signIn")
@@ -62,9 +82,8 @@ public class CandidateController {
     @PreAuthorize("hasRole('CANDIDATE')")
     public String profile(Model model){
         try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            var token = (String) authentication.getDetails();
-            var result = profileCandidateService.execute(token);
+
+            var result = profileCandidateService.execute(getToken());
             model.addAttribute("profile", result);
             return "candidate/profile";
         }catch(HttpClientErrorException e){
@@ -74,4 +93,8 @@ public class CandidateController {
 
     }
 
+    private String getToken(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (String) authentication.getDetails();
+    }
 }
