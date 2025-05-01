@@ -1,6 +1,7 @@
 package br.com.mrb.gestao_vagas_front.controller;
 
 import br.com.mrb.gestao_vagas_front.dto.Token;
+import br.com.mrb.gestao_vagas_front.service.ApplyJobService;
 import br.com.mrb.gestao_vagas_front.service.CandidateService;
 import br.com.mrb.gestao_vagas_front.service.FindJobService;
 import br.com.mrb.gestao_vagas_front.service.ProfileCandidateService;
@@ -16,8 +17,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/candidate")
@@ -30,10 +34,13 @@ public class CandidateController {
 
     final FindJobService   findJobService;
 
-    public CandidateController(CandidateService candidateService, ProfileCandidateService profileCandidateService, FindJobService findJobService) {
+    final ApplyJobService applyJobService;
+
+    public CandidateController(CandidateService candidateService, ProfileCandidateService profileCandidateService, FindJobService findJobService, ApplyJobService applyJobService) {
         this.candidateService = candidateService;
         this.profileCandidateService = profileCandidateService;
         this.findJobService = findJobService;
+        this.applyJobService = applyJobService;
     }
 
     @GetMapping("/login")
@@ -91,6 +98,13 @@ public class CandidateController {
         }
 
 
+    }
+
+    @PostMapping("/jobs/apply")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    public String applyJob(@RequestParam("jobId") UUID jobId){
+        this.applyJobService.execute(getToken(), jobId);
+        return "redirect:/candidate/jobs";
     }
 
     private String getToken(){
