@@ -1,5 +1,6 @@
 package br.com.mrb.gestao_vagas_front.controller;
 
+import br.com.mrb.gestao_vagas_front.dto.CreateCandidateDTO;
 import br.com.mrb.gestao_vagas_front.dto.Token;
 import br.com.mrb.gestao_vagas_front.service.ApplyJobService;
 import br.com.mrb.gestao_vagas_front.service.CandidateService;
@@ -64,6 +65,8 @@ public class CandidateController {
         return "candidate/jobs";
     }
 
+
+
     @PostMapping("/signIn")
     public String   signInCandidate(RedirectAttributes redirectAttributes, HttpSession session,String username, String password) {
       try{
@@ -105,6 +108,19 @@ public class CandidateController {
     public String applyJob(@RequestParam("jobId") UUID jobId){
         this.applyJobService.execute(getToken(), jobId);
         return "redirect:/candidate/jobs";
+    }
+
+    @GetMapping("/create")
+    public String create(Model model){
+        model.addAttribute("candidate", new CreateCandidateDTO());
+        return "candidate/create";
+    }
+
+    @PostMapping("/create")
+    public String save(CreateCandidateDTO candidate, Model model){
+        System.out.println(candidate.getName());
+        model.addAttribute("candidate", candidate);
+        return "redirect:/candidate/login";
     }
 
     private String getToken(){
