@@ -1,11 +1,9 @@
-package br.com.mrb.gestao_vagas_front.controller;
+package br.com.mrb.gestao_vagas_front.modules.candidate.controller;
 
-import br.com.mrb.gestao_vagas_front.dto.CreateCandidateDTO;
-import br.com.mrb.gestao_vagas_front.dto.Token;
-import br.com.mrb.gestao_vagas_front.service.ApplyJobService;
-import br.com.mrb.gestao_vagas_front.service.CandidateService;
-import br.com.mrb.gestao_vagas_front.service.FindJobService;
-import br.com.mrb.gestao_vagas_front.service.ProfileCandidateService;
+import br.com.mrb.gestao_vagas_front.modules.candidate.dto.CreateCandidateDTO;
+import br.com.mrb.gestao_vagas_front.modules.candidate.exception.FormatErrorMessage;
+import br.com.mrb.gestao_vagas_front.modules.candidate.service.*;
+
 import jakarta.servlet.http.HttpSession;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,20 +26,18 @@ import java.util.UUID;
 @RequestMapping("/candidate")
 public class CandidateController {
 
-    final
-    CandidateService candidateService;
-
+    final CandidateService candidateService;
     final ProfileCandidateService profileCandidateService;
-
-    final FindJobService   findJobService;
-
+    final FindJobService findJobService;
     final ApplyJobService applyJobService;
+    final CreateCandidateService createCandidateService;
 
-    public CandidateController(CandidateService candidateService, ProfileCandidateService profileCandidateService, FindJobService findJobService, ApplyJobService applyJobService) {
+    public CandidateController(CandidateService candidateService, ProfileCandidateService profileCandidateService, FindJobService findJobService, ApplyJobService applyJobService, CreateCandidateService createCandidateService) {
         this.candidateService = candidateService;
         this.profileCandidateService = profileCandidateService;
         this.findJobService = findJobService;
         this.applyJobService = applyJobService;
+        this.createCandidateService = createCandidateService;
     }
 
     @GetMapping("/login")
@@ -118,9 +114,14 @@ public class CandidateController {
 
     @PostMapping("/create")
     public String save(CreateCandidateDTO candidate, Model model){
-        System.out.println(candidate.getName());
+        try {
+            createCandidateService.execute(candidate);
+        }catch (HttpClientErrorException e){
+            model.addAttribute("error_message", FormatErrorMessage.formatErrorMessage(e.getResponseBodyAsString()));
+        }
         model.addAttribute("candidate", candidate);
-        return "redirect:/candidate/login";
+
+        return "/candidate/create";
     }
 
     private String getToken(){

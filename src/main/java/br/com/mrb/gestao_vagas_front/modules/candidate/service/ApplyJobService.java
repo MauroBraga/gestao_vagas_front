@@ -1,4 +1,4 @@
-package br.com.mrb.gestao_vagas_front.service;
+package br.com.mrb.gestao_vagas_front.modules.candidate.service;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;

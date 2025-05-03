@@ -1,6 +1,6 @@
-package br.com.mrb.gestao_vagas_front.service;
+package br.com.mrb.gestao_vagas_front.modules.candidate.service;
 
-import br.com.mrb.gestao_vagas_front.dto.ProfileUserDto;
+import br.com.mrb.gestao_vagas_front.modules.candidate.dto.ProfileUserDto;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
