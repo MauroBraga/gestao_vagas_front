@@ -11,19 +11,10 @@ import org.springframework.web.client.RestTemplate;
 public class CreateCandidateService {
 
     public void execute(CreateCandidateDTO createCandidateDTO) {
-
         RestTemplate restTemplate = new RestTemplate();
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-
         HttpEntity<CreateCandidateDTO> request = new HttpEntity<>(createCandidateDTO, headers);
-
-        var result = restTemplate.postForEntity("http://localhost:8080/candidate", request, String.class);
-
-        System.out.println(result);
-
-
-
+        restTemplate.postForEntity("http://localhost:8080/candidate", request, String.class);
     }
 }
