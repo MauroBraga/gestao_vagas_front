@@ -1,4 +1,4 @@
-package br.com.mrb.gestao_vagas_front.modules.candidate.dto;
+package br.com.mrb.gestao_vagas_front.dto;
 
 import lombok.Data;
 
