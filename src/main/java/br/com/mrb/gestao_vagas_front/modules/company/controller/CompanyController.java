@@ -5,6 +5,7 @@ import br.com.mrb.gestao_vagas_front.modules.company.dto.CreateCompanyDTO;
 import br.com.mrb.gestao_vagas_front.modules.company.dto.CreateJobsDTO;
 import br.com.mrb.gestao_vagas_front.modules.company.service.CreateCompanyService;
 import br.com.mrb.gestao_vagas_front.modules.company.service.CreateJobService;
+import br.com.mrb.gestao_vagas_front.modules.company.service.ListAllJobsCompanyService;
 import br.com.mrb.gestao_vagas_front.modules.company.service.LoginCompanyService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,10 +32,13 @@ public class CompanyController {
 
     private final CreateJobService createJobService;
 
-    public CompanyController(CreateCompanyService createCompanyService, LoginCompanyService loginCompanyService, CreateJobService createJobService) {
+    private final ListAllJobsCompanyService listAllJobsCompanyService;
+
+    public CompanyController(CreateCompanyService createCompanyService, LoginCompanyService loginCompanyService, CreateJobService createJobService, ListAllJobsCompanyService listAllJobsCompanyService) {
         this.createCompanyService = createCompanyService;
         this.loginCompanyService = loginCompanyService;
         this.createJobService = createJobService;
+        this.listAllJobsCompanyService = listAllJobsCompanyService;
     }
 
 
@@ -101,15 +105,27 @@ public class CompanyController {
     //@PreAuthorize("hasRoles('COMPANY')")
     public String createJobs(CreateJobsDTO createJobsDTO){
         this.createJobService.execute(createJobsDTO,getToken());
-        return "redirect:/company/jobs";
+        return "redirect:/company/jobs/list";
     }
 
     @GetMapping("/jobs/list")
     @PreAuthorize("hasRole('COMPANY')")
     public String list(Model model){
-        //model.addAttribute("jobs", new CreateJobsDTO());
+        var result = this.listAllJobsCompanyService.execute(getToken());
+        model.addAttribute("jobs", result);
         return "company/list";
     }
+
+    @GetMapping("/jobs/logout")
+    public String logout(HttpSession session){
+        SecurityContextHolder.getContext().setAuthentication(null);
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
+        session.setAttribute("token", null);
+
+        return "redirect:/company/login";
+    }
+
 
     private String getToken(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
